@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/images", express.static("images"));
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://rifasjosecastillo:SJQEDNx4D1lusWmR@clusterjosecastillo.vqz3hgh.mongodb.net/?retryWrites=true&w=majority&appName=ClusterJoseCastillo";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://castillokelvis560:7ESp3t0xzfCMIAK6@clusterjosecastillo.xeuadjk.mongodb.net/?retryWrites=true&w=majority&appName=ClusterJoseCastillo";
 
 mongoose
   .connect(MONGO_URI)
