@@ -106,7 +106,7 @@ const generateApprovalCodes = async (count) => {
   );
 
   while (codes.size < count) {
-    let code = Math.floor(Math.random() * 10000)
+    let code = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(4, "0");
 
