@@ -72,18 +72,11 @@ const Raffle = mongoose.model("Raffle", RaffleSchema);
 const Ticket = mongoose.model("Ticket", TicketSchema);
 const Dollar = mongoose.model("Dollar", DollarPriceSchema);
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: "castillokelvis560@gmail.com",
-    pass: "vvqe mglx knlu nhlr",
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+const SibApiV3Sdk = require("sib-api-v3-sdk");
+let defaultClient = SibApiV3Sdk.ApiClient.instance;
+let apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -106,7 +99,7 @@ const generateApprovalCodes = async (count) => {
   );
 
   while (codes.size < count) {
-    let code = Math.floor(Math.random() * 10000)
+    let code = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(4, "0");
 
@@ -319,16 +312,16 @@ app.post("/api/tickets/approve/:id", async (req, res) => {
     ticket.approvalCodes = approvalCodes;
     await ticket.save();
 
-    const mailOptions = {
-      from: '"Soporte KJ Castillo" <castillokelvis560@gmail.com>',
-      to: ticket.email,
+    const sendSmtpEmail = {
+      sender: { name: "Soporte KJ Castillo", email: "castillokelvis560@gmail.com" },
+      to: [{ email: ticket.email, name: ticket.fullName }],
       subject: "🎟️ ¡TU COMPRA HA SIDO CONFIRMADA!",
-      html: `
+      htmlContent: `
   <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd;">
 
      <!-- Logo -->
           <div style="margin-bottom: 20px;">
-            <img src="cid:logoImage" alt="Logo" style="width: 100px; height: 100px; border-radius: 50%; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+            <img src="https://kjcastillo.up.railway.app/images/logo.png" alt="Logo" style="width: 100px; height: 100px; border-radius: 50%; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
           </div>
 
   <p style="margin-top: 20px;">Holaa ${ticket?.fullName
@@ -368,17 +361,11 @@ app.post("/api/tickets/approve/:id", async (req, res) => {
         </a>
       </div>
   </div>
-  
   `,
-      attachments: [
-        {
-          filename: "logo.png",
-          path: "images/logo.png", // Ruta donde tienes la imagen del logo en tu servidor
-          cid: "logoImage", // Se usa como referencia en el HTML
-        },
-      ],
     };
-    await transporter.sendMail(mailOptions);
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+
     res
       .status(200)
       .json({ message: "Ticket aprobado y códigos enviados", approvalCodes });
@@ -419,11 +406,11 @@ app.post("/api/tickets/resend/:id", async (req, res) => {
         .json({ error: "No hay una rifa activa en este momento." });
     }
 
-    const mailOptions = {
-      from: '"Soporte KJ Castillo" <castillokelvis560@gmail.com>',
-      to: ticket.email,
+    const sendSmtpEmail = {
+      sender: { name: "Soporte KJ Castillo", email: "castillokelvis560@gmail.com" },
+      to: [{ email: ticket.email, name: ticket.fullName }],
       subject: "🎟️ Reenvío de Ticket Aprobado",
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd;">
     
           <!-- Logo -->
@@ -472,16 +459,9 @@ app.post("/api/tickets/resend/:id", async (req, res) => {
           </div>
         </div>
       `,
-      attachments: [
-        {
-          filename: "logo.png",
-          path: "images/logo.png", // Ruta donde tienes la imagen del logo en tu servidor
-          cid: "logoImage", // Se usa como referencia en el HTML
-        },
-      ],
     };
 
-    await transporter.sendMail(mailOptions);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
     res.status(200).json({ message: "Correo reenviado exitosamente" });
   } catch (error) {
     console.error("Error al reenviar el correo:", error);
