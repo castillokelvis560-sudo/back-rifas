@@ -415,7 +415,7 @@ app.post("/api/tickets/resend/:id", async (req, res) => {
     
           <!-- Logo -->
           <div style="margin-bottom: 20px;">
-            <img src="cid:logoImage" alt="Logo" style="width: 100px; height: 100px; border-radius: 50%; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+            <img src="https://kjcastillo.up.railway.app/images/logo.png" alt="Logo" style="width: 100px; height: 100px; border-radius: 50%; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
           </div>
     
           <p>Hola ${ticket?.fullName
